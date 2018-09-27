@@ -57,11 +57,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.myView
 
     }
 
-    public void adddetails(ArrayList<String> detail){
+    public void adddetails(ArrayList<String> detail) {
 
-        for(String dt: detail)
-            data.add(dt);
-        }
+        data.addAll(detail);
+        notifyDataSetChanged();
+    }
 
 }
 
