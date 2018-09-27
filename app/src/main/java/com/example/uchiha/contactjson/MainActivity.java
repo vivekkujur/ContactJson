@@ -12,15 +12,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.TextView;
-
+import android.view.View;
+import android.widget.Button;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,11 +29,18 @@ public class MainActivity extends AppCompatActivity {
     private boolean mContactPermissionGranted = false;
     private static final String READ_CONTACTS = Manifest.permission.READ_CONTACTS;
     private static final int CONTACTS_PERMISSION_REQUEST_CODE = 1234;
-    private TextView textView;
-    Handler handler;
+    private RecyclerAdapter recyclerAdapter;
+    private RecyclerView recyclerView;
+    private LinearLayoutManager linearLayoutManager;
+
+
 
     private ArrayList<String> mEntries=new ArrayList<>();
     private ArrayList<String> data=new ArrayList<>();
+
+    private Button button;
+    private Cursor cursor;
+    private  JSONArray resultSet = new JSONArray();
 
 
     @Override
@@ -40,10 +48,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        recyclerView=findViewById(R.id.main_recycler_view);
+        button=findViewById(R.id.button);
+
+        linearLayoutManager= new LinearLayoutManager(this);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerAdapter=new RecyclerAdapter();
+
+
+
         if(mContactPermissionGranted){
             getContactPermission();
 
         }
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
+
 
     }
 
@@ -59,34 +87,58 @@ public class MainActivity extends AppCompatActivity {
 
         if(mContactPermissionGranted) {
 
-            handler = new Handler();
+            cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
 
-            textView = findViewById(R.id.texthello);
-            final Cursor phpnes = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+            cursor.moveToFirst();
+            while ( cursor.isAfterLast() == false) {
 
+                int totalColumn = cursor.getColumnCount();
+                JSONObject Object = new JSONObject();
 
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            data=cur2Json(phpnes);
-                            textView.setText(data.toString());
+                for (int i = 0; i < totalColumn; i++) {
+                    if (cursor.getColumnName(i) != null) {
+                        try {
+                            Object.put(cursor.getColumnName(i),
+                                    cursor.getString(i));
+                        } catch (Exception e) {
+                            Log.d(TAG, e.getMessage());
                         }
-                    });
-
+                    }
                 }
-            };
-            thread.start();
+
+                resultSet.put(Object);
+                cursor.moveToNext();
+
+            }
+                cursor.close();
+
+            for(int i = 0; i < resultSet.length(); i++) {
+                try {
+                    JSONObject jsonObject = resultSet.getJSONObject(i);
+                    mEntries.add(jsonObject.toString());
+                }
+                catch(JSONException e) {
+                    mEntries.add("Error: " + e.getLocalizedMessage());
+                }
+            }
+
+                recyclerAdapter=new RecyclerAdapter(mEntries,getApplicationContext());
+                recyclerView.setAdapter(recyclerAdapter);
+
 
         }else{
             getContactPermission();
         }
-        
+
+
     }
+
+   /* private void pagination(){
+
+
+
+    }
+*/
 
 
     private void getContactPermission() {
@@ -133,42 +185,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public ArrayList cur2Json(Cursor cursor) {
-
-
-
-        JSONArray resultSet = new JSONArray();
-        cursor.moveToFirst();
-        while (cursor.isAfterLast() == false) {
-
-            int totalColumn = cursor.getColumnCount();
-            JSONObject Object = new JSONObject();
-
-            for (int i = 0; i < totalColumn; i++) {
-                if (cursor.getColumnName(i) != null) {
-                    try {
-                        Object.put(cursor.getColumnName(i),
-                                cursor.getString(i));
-                    } catch (Exception e) {
-                        Log.d(TAG, e.getMessage());
-                    }
-                }
-            }
-            resultSet.put(Object);
-            cursor.moveToNext();
-        }
-        cursor.close();
-
-        for(int i = 0; i < resultSet.length(); i++) {
-            try {
-                JSONObject jsonObject = resultSet.getJSONObject(i);
-                mEntries.add(jsonObject.toString());
-            }
-            catch(JSONException e) {
-                mEntries.add("Error: " + e.getLocalizedMessage());
-            }
-        }
-        return mEntries;
-    }
+//    public ArrayList cur2Json(Cursor cursor) {
+//
+//
+//
+//        JSONArray resultSet = new JSONArray();
+//        cursor.moveToFirst();
+//   while (cursor.isAfterLast() == false) {
+//
+//            int totalColumn = cursor.getColumnCount();
+//            JSONObject Object = new JSONObject();
+//
+//            for (int i = 0; i < totalColumn; i++) {
+//                if (cursor.getColumnName(i) != null) {
+//                    try {
+//                        Object.put(cursor.getColumnName(i),
+//                                cursor.getString(i));
+//                    } catch (Exception e) {
+//                        Log.d(TAG, e.getMessage());
+//                    }
+//                }
+//            }
+//            resultSet.put(Object);
+//            cursor.moveToNext();
+//        }
+//        cursor.close();
+//
+//        for(int i = 0; i < resultSet.length(); i++) {
+//            try {
+//                JSONObject jsonObject = resultSet.getJSONObject(i);
+//                mEntries.add(jsonObject.toString());
+//            }
+//            catch(JSONException e) {
+//                mEntries.add("Error: " + e.getLocalizedMessage());
+//            }
+//        }
+//        return mEntries;
+//    }
 }
 
