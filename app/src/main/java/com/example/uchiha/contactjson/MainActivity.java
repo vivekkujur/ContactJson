@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
            cursor.moveToPosition(position);
            while(  k > 0 && cursor.isAfterLast()==false){
-
+                    position++;
                JSONObject Object = new JSONObject();
                JSONArray jArr=new JSONArray();
 
