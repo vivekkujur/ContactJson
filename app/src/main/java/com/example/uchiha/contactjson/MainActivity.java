@@ -38,24 +38,11 @@ public class MainActivity extends AppCompatActivity {
     private int position=0;
     private ProgressBar progressBar;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        recyclerView=findViewById(R.id.main_recycler_view);
-        load=findViewById(R.id.load);
-        progressBar=findViewById(R.id.progressBar2);
-        linearLayoutManager= new LinearLayoutManager(this);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerAdapter=new RecyclerAdapter();
-
-        cursor = getApplicationContext().getContentResolver()
-                .query(ContactsContract.Contacts.CONTENT_URI, null, null, null,
-                        ContactsContract.Contacts.SORT_KEY_PRIMARY + " ASC");
-        page=cursor.getCount()/10;
 
         getContactPermission();
 
@@ -65,6 +52,24 @@ public class MainActivity extends AppCompatActivity {
                 pagination();
             }
         });
+
+    }
+
+    private void decl(){
+        progressBar=findViewById(R.id.progressBar2);
+
+
+        recyclerView=findViewById(R.id.main_recycler_view);
+        load=findViewById(R.id.load);
+        linearLayoutManager= new LinearLayoutManager(this);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerAdapter=new RecyclerAdapter();
+
+        cursor = getApplicationContext().getContentResolver()
+                .query(ContactsContract.Contacts.CONTENT_URI, null, null, null,
+                        ContactsContract.Contacts.SORT_KEY_PRIMARY + " ASC");
+        page=cursor.getCount()/10;
 
     }
 
@@ -264,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
         if(ContextCompat.checkSelfPermission(this.getApplicationContext(),READ_CONTACTS)== PackageManager.PERMISSION_GRANTED){
 
             mContactPermissionGranted=true;
+            decl();
             ShowContacts();
 
         }else{
@@ -291,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     mContactPermissionGranted=true;
+                    decl();
                     ShowContacts();
 
                 }
